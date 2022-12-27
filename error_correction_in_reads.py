@@ -9,40 +9,14 @@ Return: A list of all corrections in the form "[old read]->[new read]". (Each co
 
 '''
 #%%
-import random
 from Bio.Seq import Seq
-from scipy.spatial.distance import hamming
-
-#%%
-#generates our DNA string. 
-def DNA(length):
-    return ''.join(random.choice('CGTA') for _ in range(length))
-
-#%%
-# Generating a random FASTA file with: 
-# Length of sequences, l,  between 5 and 50. 
-# Number of sequences, N, between 100 and 1000. 
-
-def fasta_file_generator(path_to_file:str, length:int=25, number_of_entries:int = 500):
-    
-    f = open(path_to_file, "w")
-
-    for i in range(number_of_entries):
-        DNA_string = DNA(length)
-        f.write(f">Rosalind_{i+1}\n")
-        f.write(f"{DNA_string}\n")
-
-    f.close()
-#%%
-#fasta_file_generator("/home/kai/Rosalind_problems/test.fasta", number_of_entries=10)
 
 #%%
 #read in as dictionary where header is key and sequence is value
 with open("/home/kai/Rosalind_problems/test.fasta") as f:
     fasta_dictionary = {line.strip():next(f).strip() for line in f}
 
-#%%
-#generate reverse complements
+#%% generate reverse complements keys and pairs in two lists
 rev_dict_keys = []
 rev_dict_values = []
 
@@ -55,54 +29,39 @@ for fasta_key,fasta_value in fasta_dictionary.items():
     rev_dict_keys.append(reversed_key)
     rev_dict_values.append(reversed_value)
 
-#create dictionary with reverse complement fasta sequences:
+#%% create dictionary with reverse complement fasta sequences from two lists above:
 rev_fasta_dictionary = {rev_dict_keys[i]: rev_dict_values[i] for i in range(len(rev_dict_keys))}
 
-#%%
-#merge the original and it's reverse complements.
+#%% merge the original and reverse complement dict. 
 complete_fasta_dictionary = dict(fasta_dictionary, **rev_fasta_dictionary)
 
-#%%
-#non-complement pair - > two pairs
-#complement pair -> two pairs.
-#non-complement pair -> still alone. 
-
-
-#%%
-#check if two values are the same by flipping dictionary: 
+#%% check if we have two sequences that are the same by flipping dictionary: 
 flipped_fasta_dictionary = {} 
 for key, value in complete_fasta_dictionary.items():
     if value not in flipped_fasta_dictionary:
         flipped_fasta_dictionary[value] = [key]
     else:
         flipped_fasta_dictionary[value].append(key)
-print("duplicates", str(flipped_fasta_dictionary))
 
-#%%
-#extract correct reads. 
+#%% extract correct reads. 
 correct_reads = {}
 for k, v in flipped_fasta_dictionary.items():
     if len(v)>=2:
         correct_reads[k] = v
 print(correct_reads)
 
-#%%
-#compare all values that aren't paired with all the paired values. 
-#return those with a distance of exactly 1 to one of the pairs. 
+#%% extract potentially incorrect reads 
 potentially_incorrect_reads = {k: v for k, v in flipped_fasta_dictionary.items() if k not in correct_reads}
 
-#%%
-print(potentially_incorrect_reads)
-#%%
-#removing complements of potentially incorrect sequences now we don't need them
-for k, v in potentially_incorrect_reads.items(): 
-    if "rev" in v:
-        del potentially_incorrect_reads
+#%% removing complements of potentially incorrect sequences now we don't need them
+non_rev_incorrect_reads = {k: v for k,v in potentially_incorrect_reads.items() if "rev" not in str(v)}
 
-#%%
-for incorrect_sequence_keys, incorrect_sequence_values  in potentially_incorrect_reads.items(): 
+
+#%% producing the final result. mapping wrong values to correct ones.
+for incorrect_sequence_keys, incorrect_sequence_values  in non_rev_incorrect_reads.items(): 
     for correct_sequence_keys, correct_sequence_values in correct_reads.items():
         
+        #hamming distance
         count = sum(1 for a, b in zip(incorrect_sequence_keys, correct_sequence_keys) if a != b)
         
         if count == 1:

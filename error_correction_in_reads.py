@@ -13,7 +13,7 @@ from Bio.Seq import Seq
 
 #%%
 #read in as dictionary where header is key and sequence is value
-with open("/home/kai/Rosalind_problems/test.fasta") as f:
+with open("/home/kai/Rosalind_problems/rosalind.fasta") as f:
     fasta_dictionary = {line.strip():next(f).strip() for line in f}
 
 #%% generate reverse complements keys and pairs in two lists
@@ -65,7 +65,7 @@ for incorrect_sequence_keys, incorrect_sequence_values  in non_rev_incorrect_rea
         count = sum(1 for a, b in zip(incorrect_sequence_keys, correct_sequence_keys) if a != b)
         
         if count == 1:
-            print(f'incorrect entry: {incorrect_sequence_values} matches correct entry {correct_sequence_values}')
+            #print(f'incorrect entry: {incorrect_sequence_values} matches correct entry {correct_sequence_values}')
             print(f'{incorrect_sequence_keys} -> {correct_sequence_keys}')
 
 #%%
